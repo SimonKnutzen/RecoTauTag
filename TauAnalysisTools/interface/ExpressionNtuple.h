@@ -24,7 +24,7 @@ template<class T>
 class ExpressionNtuple : private boost::noncopyable {
   public:
     ExpressionNtuple(const edm::ParameterSet& pset);
-    ~ExpressionNtuple();
+    virtual ~ExpressionNtuple();
 
     // Setup the tree in the given TFile
     void initialize(TFileDirectory& fs);

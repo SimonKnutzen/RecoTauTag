@@ -6,7 +6,7 @@
 #include "DataFormats/PatCandidates/interface/Tau.h"
 #include "PhysicsTools/JetMCUtils/interface/JetMCTag.h"
 #include "SimDataFormats/GeneratorProducts/interface/GenEventInfoProduct.h"
-#include "FWCore/Framework/interface/Event.h"
+//#include "FWCore/Framework/interface/Event.h"
 #include "DataFormats/PatCandidates/interface/Jet.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 
@@ -14,13 +14,20 @@ class TauInfoContainer {
   public:
     // Default needed for persistency
     TauInfoContainer(); 
+    ~TauInfoContainer();
 
-    TauInfoContainer( const pat::Tau* recoTauCand, const pat::Tau* altTauObj, std::vector<const reco::Candidate*>* trigObj, const reco::Candidate* GenParticle, unsigned int index, unsigned int nTotalObjects, const GenEventInfoProduct* GenInfo, unsigned int NVTX, const edm::Event* evt, const reco::Candidate* pfJet, const reco::Vertex* Vertex );
+    //TauInfoContainer( const pat::Tau* recoTauCand, const pat::Tau* altTauObj, std::vector<const reco::Candidate*>* trigObj, const reco::Candidate* GenParticle, unsigned int index, unsigned int nTotalObjects, const GenEventInfoProduct* GenInfo, unsigned int NVTX, const edm::Event* evt, const reco::Candidate* pfJet, const reco::Vertex* Vertex );
+
+    //TauInfoContainer( const pat::Tau* recoTauCand, const pat::Tau* altTauObj, std::vector<const reco::Candidate*>* trigObj, const reco::Candidate* GenParticle, unsigned int index, unsigned int nTotalObjects, unsigned int NVTX, const edm::Event* evt, const reco::Candidate* pfJet, const reco::Vertex* Vertex );
+    //
+    TauInfoContainer( const pat::Tau* recoTauCand, const pat::Tau* altTauObj, std::vector<const reco::Candidate*>* trigObj, const reco::Candidate* GenParticle, unsigned int index, unsigned int nTotalObjects, unsigned int NVTX, const reco::Candidate* pfJet, const reco::Vertex* Vertex );
     
     // Get tag tau object
     const pat::Tau* recoTauCand() const;
 
     const pat::Tau* altTauObj() const;
+
+    //const reco::Track* Track() const;
 
     const reco::Candidate* PfJet() const;
 
@@ -37,6 +44,8 @@ class TauInfoContainer {
 
     bool isPfJetMatched() const;
 
+    bool hasValidTrack() const;
+
     // Get match status of trigger filter object
     bool isTrigObjMatched(int a) const;
 
@@ -50,19 +59,23 @@ class TauInfoContainer {
 
     const reco::Candidate* GenTauJet() const; 
 
-    const GenEventInfoProduct* genInfo() const;
+    //const GenEventInfoProduct* genInfo() const;
 
     int genDecayMode() const;
 
     int Nvtx() const;
 
-    // const edm::Event* Evt() const;
+    //const edm::Event* Evt() const;
 
     double RunNr() const;
 
     double EvtNr() const;
 
     double LumiSec() const;
+
+    double TransImpPara() const;
+
+    double TransImpParaError() const;
 
   private:
 
@@ -76,7 +89,7 @@ class TauInfoContainer {
     unsigned int nTotalObjects_;
     const GenEventInfoProduct* genInfo_; 
     unsigned int Nvtx_;
-    const edm::Event* Evt_;
+    //const edm::Event* Evt_;
     const reco::Candidate* pfJet_;
     const reco::Vertex* Vertex_;
 };

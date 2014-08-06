@@ -5,20 +5,32 @@
 
 using namespace edm;
 
-TauInfoContainer::TauInfoContainer(const pat::Tau* recoTauCand, const pat::Tau* altTauObj, std::vector<const reco::Candidate*>* trigObj, const reco::Candidate* GenParticle ,unsigned int index, unsigned int nTotalObjects, const GenEventInfoProduct* GenInfo, unsigned int NVTX, const edm::Event* evt, const reco::Candidate* pfJet, const reco::Vertex* Vertex ):
-  recoTauCand_(recoTauCand),altTauObj_(altTauObj), trigObj_(trigObj),GenParticle_(GenParticle),index_(index), nTotalObjects_(nTotalObjects), genInfo_(GenInfo),Nvtx_(NVTX),Evt_(evt), pfJet_(pfJet), Vertex_(Vertex){
-  
-        // Create a dummy reco::Candidate Object with unrealistic LorentzVector values as a default output to return in case of a failed matching.  
+//TauInfoContainer::TauInfoContainer(const pat::Tau* recoTauCand, const pat::Tau* altTauObj, std::vector<const reco::Candidate*>* trigObj, const reco::Candidate* GenParticle ,unsigned int index, unsigned int nTotalObjects, const GenEventInfoProduct* GenInfo, unsigned int NVTX, const edm::Event* evt, const reco::Candidate* pfJet, const reco::Vertex* Vertex ):
+//  recoTauCand_(recoTauCand),altTauObj_(altTauObj), trigObj_(trigObj),GenParticle_(GenParticle),index_(index), nTotalObjects_(nTotalObjects), genInfo_(GenInfo),Nvtx_(NVTX),Evt_(evt), pfJet_(pfJet), Vertex_(Vertex){
+//  
+//        // Create a dummy reco::Candidate Object with unrealistic LorentzVector values as a default output to return in case of a failed matching.  
+//        dummyCandidate_ = dynamic_cast<reco::Candidate* >( recoTauCand->clone());
+//        math::XYZTLorentzVector *v = new math::XYZTLorentzVector();
+//        v->SetPxPyPzE(-999.,-999.,-9999.,-999.);
+//        dummyCandidate_->setP4(((const math::XYZTLorentzVector)*v)); 
+//  
+//        // Create a dummy reco::Candidate Object with unrealistic LorentzVector values as a default output to return in case of a failed matching.  
+//        dummyCandidateTau_ = dynamic_cast<pat::Tau* >( recoTauCand->clone());
+//        dummyCandidateTau_->setP4(((const math::XYZTLorentzVector)*v)); 
+//  }
+TauInfoContainer::TauInfoContainer(const pat::Tau* recoTauCand, const pat::Tau* altTauObj, std::vector<const reco::Candidate*>* trigObj, const reco::Candidate* GenParticle ,unsigned int index, unsigned int nTotalObjects, unsigned int NVTX, const reco::Candidate* pfJet, const reco::Vertex* Vertex ):
+  recoTauCand_(recoTauCand),altTauObj_(altTauObj), trigObj_(trigObj),GenParticle_(GenParticle),index_(index), nTotalObjects_(nTotalObjects), Nvtx_(NVTX) ,pfJet_(pfJet), Vertex_(Vertex){
+         // Create a dummy reco::Candidate Object with unrealistic LorentzVector values as a default output to return in case of a failed matching.  
         dummyCandidate_ = dynamic_cast<reco::Candidate* >( recoTauCand->clone());
         math::XYZTLorentzVector *v = new math::XYZTLorentzVector();
         v->SetPxPyPzE(-999.,-999.,-9999.,-999.);
         dummyCandidate_->setP4(((const math::XYZTLorentzVector)*v)); 
-  
-        // Create a dummy reco::Candidate Object with unrealistic LorentzVector values as a default output to return in case of a failed matching.  
+         //Create a dummy reco::Candidate Object with unrealistic LorentzVector values as a default output to return in case of a failed matching.  
         dummyCandidateTau_ = dynamic_cast<pat::Tau* >( recoTauCand->clone());
         dummyCandidateTau_->setP4(((const math::XYZTLorentzVector)*v)); 
   }
 TauInfoContainer::TauInfoContainer(){}
+TauInfoContainer::~TauInfoContainer(){}
 
 const reco::Vertex* TauInfoContainer::getPV() const{
    return Vertex_;
@@ -52,20 +64,62 @@ bool TauInfoContainer::isPfJetMatched() const{
    return pfJet_ != NULL;
 }
 
-const GenEventInfoProduct* TauInfoContainer::genInfo() const {
-   return genInfo_;
+bool TauInfoContainer::hasValidTrack() const{
+   if( recoTauCand_->leadPFChargedHadrCand().isNonnull() ){
+      if(recoTauCand_->leadPFChargedHadrCand().get() != 0){
+          if( recoTauCand_->leadPFChargedHadrCand().get()->trackRef().isNonnull() ){
+
+            return true;
+         }
+        }
+     }
+   return false;
+   
 }
 
+//const reco::Track* TauInfoContainer::Track() const {
+//   if( recoTauCand_->leadPFChargedHadrCand().isNonnull() ) return &(*recoTauCand_->leadPFChargedHadrCand().get()->trackRef());
+//   else return &(*dummyCandidatePF_->trackRef());
+//}
+
+//const GenEventInfoProduct* TauInfoContainer::genInfo() const {
+//   return genInfo_;
+//}
+
 double TauInfoContainer::RunNr() const {
-   return Evt_->id().run();
+//   return Evt_->id().run();
+     return 0.0;
 }
 
 double TauInfoContainer::EvtNr() const {
-   return Evt_->id().event();
+   //return Evt_->id().event();
+   return 0.0;
 }
 
 double TauInfoContainer::LumiSec() const {
-   return Evt_->id().luminosityBlock();
+   //return Evt_->id().luminosityBlock();
+   return 0.0;
+}
+
+double TauInfoContainer::TransImpPara() const {
+     if( recoTauCand_->leadPFChargedHadrCand().isNonnull() ){
+        if(recoTauCand_->leadPFChargedHadrCand().get() != 0){
+           if( recoTauCand_->leadPFChargedHadrCand().get()->trackRef().isNonnull() ){
+               return (*recoTauCand_->leadPFChargedHadrCand().get()->trackRef()).d0();
+           }
+        }
+     }
+     return -9;
+}
+double TauInfoContainer::TransImpParaError() const {
+     if( recoTauCand_->leadPFChargedHadrCand().isNonnull() ){
+        if(recoTauCand_->leadPFChargedHadrCand().get() != 0){
+           if( recoTauCand_->leadPFChargedHadrCand().get()->trackRef().isNonnull() ){
+               return (*recoTauCand_->leadPFChargedHadrCand().get()->trackRef()).d0Error();
+           }
+        }
+     }
+     return -9;
 }
 
 const reco::Candidate* TauInfoContainer::GenParticle() const {

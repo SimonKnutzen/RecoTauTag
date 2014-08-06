@@ -27,6 +27,7 @@ template<typename ObjType>
 class ExpressionNtupleColumn {
   public:
     ExpressionNtupleColumn(const std::string& name, const std::string& func);
+    virtual ~ExpressionNtupleColumn();
     /// Compute the column function and store result in branch variable
     void compute(const ObjType& obj);
   protected:
@@ -37,6 +38,7 @@ class ExpressionNtupleColumn {
     std::string name_;
     StringObjectFunction<ObjType> func_;
 };
+template<typename T> ExpressionNtupleColumn<T>::~ExpressionNtupleColumn() {}
 
 template<typename T>
 ExpressionNtupleColumn<T>::ExpressionNtupleColumn(
