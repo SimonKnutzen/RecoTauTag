@@ -238,9 +238,42 @@ common_ntuple_branches = cms.PSet(
 
 
 
-    #RunNr = cms.string("RunNr"),
-    #EvtNr = cms.string("EvtNr"),
-    #LumiSec = cms.string("LumiSec"),
+    RunNr = cms.string("RunNr"),
+    EvtNr = cms.string("EvtNr"),
+    LumiSec = cms.string("LumiSec"),
+
+    hasValidEleMVA = cms.string("hasValidEleMVA"),
+
+    EleMVA_Tau_GSFTracklnPt = cms.string("Tau_GSFTracklnPt"),
+    EleMVA_Tau_GSFTrackEta = cms.string("Tau_GSFTrackEta"),
+    EleMVA_Tau_VisMass = cms.string("Tau_VisMass"),
+    EleMVA_Tau_EmFraction = cms.string("Tau_EmFraction"),
+    EleMVA_Tau_GSFTrackResol = cms.string("Tau_GSFTrackResol"),
+    EleMVA_Tau_Pt = cms.string("Tau_Pt"),
+    EleMVA_Tau_GammaEnFrac = cms.string("Tau_GammaEnFrac"),
+    EleMVA_Tau_LeadChargedPFCandEtaAtEcalEntrance = cms.string("Tau_LeadChargedPFCandEtaAtEcalEntrance"),
+    EleMVA_Tau_LeadChargedPFCandPt = cms.string("Tau_LeadChargedPFCandPt"),
+    EleMVA_Tau_NumGammaCands = cms.string("Tau_NumGammaCands"),
+
+    EleMVA_Tau_HadrHoP = cms.string("Tau_HadrHoP"),
+    EleMVA_Tau_GammaEtaMom = cms.string("Tau_GammaEtaMom"),
+    EleMVA_Tau_GammaPhiMom = cms.string("Tau_GammaPhiMom"),
+    EleMVA_Tau_HadrEoP = cms.string("Tau_HadrEoP"),
+    EleMVA_Tau_EtaAtEcalEntrance = cms.string("Tau_EtaAtEcalEntrance"),
+    EleMVA_Tau_GSFChi2 = cms.string("Tau_GSFChi2"),
+    EleMVA_Tau_GSFNumHits = cms.string("Tau_GSFNumHits"),
+    EleMVA_Tau_KFNumHits = cms.string("Tau_KFNumHits"),
+    EleMVA_Tau_HadrMva = cms.string("Tau_HadrMva"),
+    EleMVA_Tau_HasGsf = cms.string("Tau_HasGsf"),
+
+    EleMVA_Elec_GSFTrackEta = cms.string("Elec_GSFTrackEta"),
+    EleMVA_Elec_EtotOverPin = cms.string("Elec_EtotOverPin"),
+    EleMVA_Elec_Fbrem = cms.string("Elec_Fbrem"),
+    EleMVA_Elec_GSFNumHits = cms.string("Elec_GSFNumHits"),
+    EleMVA_Elec_Chi2GSF = cms.string("Elec_Chi2GSF"),
+    EleMVA_Elec_GSFTracklnPt = cms.string("Elec_GSFTracklnPt"),
+    EleMVA_Elec_EgammaOverPdif = cms.string("Elec_EgammaOverPdif"),
+    EleMVA_Elec_GSFTrackResol = cms.string("Elec_GSFTrackResol"),
 
     recoTauCand_Pt = cms.string("recoTauCand.pt"),
     recoTauCand_Eta = cms.string("recoTauCand.eta"),
@@ -314,7 +347,7 @@ common_ntuple_branches = cms.PSet(
 
 )
 if runOnMC:
-    #common_ntuple_branches.genWeight = cms.string("genInfo.weight")
+    common_ntuple_branches.genWeight = cms.string("genInfo.weight")
 
     common_ntuple_branches.isGenParticleMatched = cms.string("isGenParticelMatched")
     # Careful! Only use GenTauMatch (returns the values of the generator particle matched to the tagTau) values if "bool TauTrigMatch::GenTauMatchTest()" returns "true". Otherwise it contains (unrealsitic) default values

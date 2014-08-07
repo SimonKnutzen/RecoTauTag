@@ -329,8 +329,12 @@ TauValidationNTupleProd::analyze(const edm::Event& iEvent, const edm::EventSetup
             const reco::Candidate* bestJetMatch = findBestRecoObjMatch(TagTau, pfJets, maxDR_);
             const pat::Tau* bestAltTauObjMatch = findBestTauObjMatch(TagTau, altTauObjects, maxDR_);
             const reco::GsfElectron* bestEle = findBestgsfEleMatch(TagTau, gsfElectrons, 0.3);
+            
+            EleMVAContainer* EleMVA = NULL;
+            if( bestEle != 0 &&  TagTau->tauID("decayModeFindingNewDMs") > 0.5 ) EleMVA = new EleMVAContainer( bestEle, TagTau );
+            else EleMVA = new EleMVAContainer();
 
-            if( bestEle != 0 ) std::cout << bestEle->pt() << std::endl;
+            //if( bestEle != 0 ) std::cout << bestEle->pt() << std::endl;
             //const reco::Candidate*  jetTest = NULL; // For test
 
             allBestFilterMatches.push_back( NULL ); // For test
@@ -344,7 +348,7 @@ TauValidationNTupleProd::analyze(const edm::Event& iEvent, const edm::EventSetup
 
             //theMatch = new TauInfoContainer(TagTau,bestAltTauObjMatch,&allBestFilterMatches,bestGenMatch,matches.size(),tauObjects.size(), Nvtx_, jetTest, Vertex); // create a TauInfoContainer object for each tag tau
             //theMatch = new TauInfoContainer(TagTau,bestAltTauObjMatch,&allBestFilterMatches,bestGenMatch,matches.size(),tauObjects.size(), Nvtx_, &iEvent, bestJetMatch, Vertex); // create a TauInfoContainer object for each tag tau
-            theMatch = new TauInfoContainer(TagTau,bestAltTauObjMatch,&allBestFilterMatches,bestGenMatch,matches.size(),tauObjects.size(), genInfo, Nvtx_ ,evtInfo , bestJetMatch, Vertex); // create a TauInfoContainer object for each tag tau
+            theMatch = new TauInfoContainer(TagTau,bestAltTauObjMatch,&allBestFilterMatches,bestGenMatch,matches.size(),tauObjects.size(), genInfo, Nvtx_ ,evtInfo , bestJetMatch, Vertex, EleMVA); // create a TauInfoContainer object for each tag tau
 
             theMatch->genDecayMode();
 
