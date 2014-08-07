@@ -18,8 +18,8 @@ using namespace edm;
 //        dummyCandidateTau_ = dynamic_cast<pat::Tau* >( recoTauCand->clone());
 //        dummyCandidateTau_->setP4(((const math::XYZTLorentzVector)*v)); 
 //  }
-TauInfoContainer::TauInfoContainer(const pat::Tau* recoTauCand, const pat::Tau* altTauObj, std::vector<const reco::Candidate*>* trigObj, const reco::Candidate* GenParticle ,unsigned int index, unsigned int nTotalObjects, unsigned int NVTX, const reco::Candidate* pfJet, const reco::Vertex* Vertex ):
-  recoTauCand_(recoTauCand),altTauObj_(altTauObj), trigObj_(trigObj),GenParticle_(GenParticle),index_(index), nTotalObjects_(nTotalObjects), Nvtx_(NVTX) ,pfJet_(pfJet), Vertex_(Vertex){
+TauInfoContainer::TauInfoContainer(const pat::Tau* recoTauCand, const pat::Tau* altTauObj, std::vector<const reco::Candidate*>* trigObj, const reco::Candidate* GenParticle ,unsigned int index, unsigned int nTotalObjects, const GenEventInfoProduct* GenInfo, unsigned int NVTX, unsigned int* evtInfo, const reco::Candidate* pfJet, const reco::Vertex* Vertex ):
+  recoTauCand_(recoTauCand),altTauObj_(altTauObj), trigObj_(trigObj),GenParticle_(GenParticle),index_(index), nTotalObjects_(nTotalObjects), genInfo_(GenInfo), Nvtx_(NVTX), evtInfo_(evtInfo), pfJet_(pfJet), Vertex_(Vertex){
          // Create a dummy reco::Candidate Object with unrealistic LorentzVector values as a default output to return in case of a failed matching.  
         dummyCandidate_ = dynamic_cast<reco::Candidate* >( recoTauCand->clone());
         math::XYZTLorentzVector *v = new math::XYZTLorentzVector();
@@ -82,23 +82,20 @@ bool TauInfoContainer::hasValidTrack() const{
 //   else return &(*dummyCandidatePF_->trackRef());
 //}
 
-//const GenEventInfoProduct* TauInfoContainer::genInfo() const {
-//   return genInfo_;
-//}
+const GenEventInfoProduct* TauInfoContainer::genInfo() const {
+   return genInfo_;
+}
 
 double TauInfoContainer::RunNr() const {
-//   return Evt_->id().run();
-     return 0.0;
+   return evtInfo_[0];
 }
 
 double TauInfoContainer::EvtNr() const {
-   //return Evt_->id().event();
-   return 0.0;
+   return evtInfo_[2];
 }
 
 double TauInfoContainer::LumiSec() const {
-   //return Evt_->id().luminosityBlock();
-   return 0.0;
+   return evtInfo_[1];
 }
 
 double TauInfoContainer::TransImpPara() const {

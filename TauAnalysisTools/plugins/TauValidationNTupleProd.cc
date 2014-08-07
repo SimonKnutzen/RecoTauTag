@@ -61,6 +61,8 @@ class TauValidationNTupleProd : public edm::EDAnalyzer {
       std::vector<const reco::GenParticle*> getGenParticleCollection(const edm::Event& evt);
       std::vector<const pat::Tau*> getRecoCandCollections(const edm::Event& evt, const edm::InputTag& collection);
       std::vector<const reco::Candidate*> getTrigObjCandCollections(const edm::Event& evt, const edm::InputTag& collection, const std::string& filtername);
+      std::vector<const reco::GsfElectron*> getGsfElectronCollections(const edm::Event& evt);
+      const reco::GsfElectron* findBestgsfEleMatch(const pat::Tau* TagTauObj, std::vector<const reco::GsfElectron*>& gsfEle, double maxDR);
       const reco::Candidate* findBestMatch(const pat::Tau* TagTauObj,std::vector<const reco::Candidate*>& FilterSelection, double maxDR);
       const reco::GenParticle* findBestGenMatch(const pat::Tau* TagTauObj,std::vector<const reco::GenParticle*>& GenPart, double maxDR);
       std::vector<const reco::Candidate*> getRecoJetCollections(const edm::Event& evt);
@@ -113,15 +115,17 @@ const reco::Vertex* TauValidationNTupleProd::getVertexCollection(const edm::Even
   return output;
 }
 
-//const GenEventInfoProduct* TauValidationNTupleProd::getGenEvtInfo(const edm::Event& evt) {
-//    //GenEventInfoProduct* const output;
-//
-//    edm::Handle<GenEventInfoProduct> evt_info;
-//    evt.getByType(evt_info);
-//   GenEventInfoProduct const *output = &(*evt_info);
-//    //output = 0; 
-//  return output;
-//}
+const GenEventInfoProduct* TauValidationNTupleProd::getGenEvtInfo(const edm::Event& evt) {
+    //GenEventInfoProduct* const output;
+    //edm::Handle<GenEventInfoProduct> evt_info;
+    //evt.getByType(evt_info);
+    //
+    edm::Handle<GenEventInfoProduct> evt_info;
+    evt.getByLabel("generator",evt_info);
+    GenEventInfoProduct const *output = &(*evt_info);
+    //output = 0; 
+    return output;
+}
 
 // Get collection of generator particles with status 2
 
@@ -167,6 +171,37 @@ std::vector<const reco::Candidate*> TauValidationNTupleProd::getRecoJetCollectio
       const reco::Candidate& object =  dynamic_cast< const reco::Candidate& > (handle->at(j));
         output.push_back(&object);
     }
+  return output;
+}
+//Get gsfElectronCollection
+//
+std::vector<const reco::GsfElectron*> TauValidationNTupleProd::getGsfElectronCollections(const edm::Event& evt) {
+    std::vector<const reco::GsfElectron*> output;
+    edm::Handle<reco::GsfElectronCollection> gsfElectrons;
+    evt.getByLabel("gsfElectrons",gsfElectrons);
+
+    for (size_t j = 0; j < gsfElectrons->size(); ++j) {
+      const reco::GsfElectron& object = (gsfElectrons->at(j));
+        output.push_back(&object);
+    }
+  return output;
+}
+
+//Match gsfEle to tagTau
+const reco::GsfElectron* TauValidationNTupleProd::findBestgsfEleMatch(const pat::Tau* TagTauObj,
+    std::vector<const reco::GsfElectron*>& gsfEle, double maxDR) {
+  const reco::GsfElectron*  output = NULL;
+  double maxPt = 0;
+  for (size_t i = 0; i < gsfEle.size(); ++i) {
+    double deltaR = reco::deltaR(*TagTauObj, *gsfEle[i]);
+    double PT = gsfEle[i]->pt();
+    if (deltaR < maxDR && gsfEle[i]->pt() > 10. ) {
+      if (!output || ( PT > maxPt )) {
+        output = gsfEle[i];
+        maxPt = PT;
+      }
+    }
+  }
   return output;
 }
 
@@ -256,20 +291,27 @@ void
 TauValidationNTupleProd::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
 {
 
+    unsigned int evtInfo[3] = {iEvent.run(),iEvent.luminosityBlock(),(iEvent.eventAuxiliary()).event()};
     std::cout << iEvent.run() << std::endl;
 
     std::vector<const pat::Tau*> tauObjects = getRecoCandCollections(iEvent, tauSrc_);
     std::vector<const pat::Tau*> altTauObjects = getRecoCandCollections(iEvent, altTauSrc_);
     std::vector<const reco::Candidate*> pfJets = getRecoJetCollections(iEvent);
+    std::vector<const reco::GsfElectron*> gsfElectrons = getGsfElectronCollections(iEvent);
     std::vector<const reco::GenParticle*> GenObjects;
     if(isMC_) GenObjects = getGenParticleCollection(iEvent);
     const reco::Vertex* Vertex = getVertexCollection(iEvent);
     std::vector<std::vector<const reco::Candidate*>> allTrigObjects;
 
 
-    //const GenEventInfoProduct* genInfo;
-    //if(isMC_) genInfo = getGenEvtInfo(iEvent);
-
+    const GenEventInfoProduct* genInfo;
+    if(isMC_){
+      genInfo = getGenEvtInfo(iEvent);
+      std::cout << genInfo->weight() << std::endl;
+    }
+    else{
+      genInfo = NULL;
+    }
     //for(unsigned int i = 0; i < filtNames.size(); i++){
 
     //     std::vector<const reco::Candidate*> trigObjects = getTrigObjCandCollections(iEvent, triggerSrc_, filtNames[i]);
@@ -286,7 +328,9 @@ TauValidationNTupleProd::analyze(const edm::Event& iEvent, const edm::EventSetup
             const reco::Candidate* bestGenMatch = findBestGenMatch(TagTau,GenObjects, maxDR_) ;
             const reco::Candidate* bestJetMatch = findBestRecoObjMatch(TagTau, pfJets, maxDR_);
             const pat::Tau* bestAltTauObjMatch = findBestTauObjMatch(TagTau, altTauObjects, maxDR_);
+            const reco::GsfElectron* bestEle = findBestgsfEleMatch(TagTau, gsfElectrons, 0.3);
 
+            if( bestEle != 0 ) std::cout << bestEle->pt() << std::endl;
             //const reco::Candidate*  jetTest = NULL; // For test
 
             allBestFilterMatches.push_back( NULL ); // For test
@@ -297,10 +341,10 @@ TauValidationNTupleProd::analyze(const edm::Event& iEvent, const edm::EventSetup
             //    allBestFilterMatches.push_back(bestFilterMatch); // enter the best matched trigger object for each filter into a vector 
             //       
             //}    
-                
+
             //theMatch = new TauInfoContainer(TagTau,bestAltTauObjMatch,&allBestFilterMatches,bestGenMatch,matches.size(),tauObjects.size(), Nvtx_, jetTest, Vertex); // create a TauInfoContainer object for each tag tau
             //theMatch = new TauInfoContainer(TagTau,bestAltTauObjMatch,&allBestFilterMatches,bestGenMatch,matches.size(),tauObjects.size(), Nvtx_, &iEvent, bestJetMatch, Vertex); // create a TauInfoContainer object for each tag tau
-            theMatch = new TauInfoContainer(TagTau,bestAltTauObjMatch,&allBestFilterMatches,bestGenMatch,matches.size(),tauObjects.size(), Nvtx_, bestJetMatch, Vertex); // create a TauInfoContainer object for each tag tau
+            theMatch = new TauInfoContainer(TagTau,bestAltTauObjMatch,&allBestFilterMatches,bestGenMatch,matches.size(),tauObjects.size(), genInfo, Nvtx_ ,evtInfo , bestJetMatch, Vertex); // create a TauInfoContainer object for each tag tau
 
             theMatch->genDecayMode();
 
