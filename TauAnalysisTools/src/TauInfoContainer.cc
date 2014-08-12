@@ -202,9 +202,6 @@ void EleMVAContainer::calcMVAvar(){
    Tau_VisMass_ = recoTauCand_->mass();
    Tau_HadrMva_ = TMath::Max(recoTauCand_->electronPreIDOutput(), float(-1.));
 
-
-   std::cout << Tau_GammaEnFrac_ << std::endl;
-
    Elec_HasSC_ = 0;
    reco::SuperClusterRef pfSuperCluster = bestEle_->pflowSuperCluster();
    if ( pfSuperCluster.isNonnull() && pfSuperCluster.isAvailable() ) {
@@ -269,8 +266,8 @@ void EleMVAContainer::calcMVAvar(){
 //        dummyCandidateTau_ = dynamic_cast<pat::Tau* >( recoTauCand->clone());
 //        dummyCandidateTau_->setP4(((const math::XYZTLorentzVector)*v)); 
 //  }
-TauInfoContainer::TauInfoContainer(const pat::Tau* recoTauCand, const pat::Tau* altTauObj, std::vector<const reco::Candidate*>* trigObj, const reco::Candidate* GenParticle ,unsigned int index, unsigned int nTotalObjects, const GenEventInfoProduct* GenInfo, unsigned int NVTX, unsigned int* evtInfo, const reco::Candidate* pfJet, const reco::Vertex* Vertex, EleMVAContainer* eleMVA ):
-  recoTauCand_(recoTauCand),altTauObj_(altTauObj), trigObj_(trigObj),GenParticle_(GenParticle),index_(index), nTotalObjects_(nTotalObjects), genInfo_(GenInfo), Nvtx_(NVTX), evtInfo_(evtInfo), pfJet_(pfJet), Vertex_(Vertex), eleMVA_(eleMVA){
+TauInfoContainer::TauInfoContainer(const pat::Tau* recoTauCand, const pat::Tau* altTauObj, std::vector<const reco::Candidate*>* trigObj, const reco::Candidate* GenParticle ,unsigned int index, unsigned int nTotalObjects, const GenEventInfoProduct* GenInfo, unsigned int NVTX, unsigned int* evtInfo, const reco::Candidate* pfJet, const reco::Vertex* Vertex, EleMVAContainer* eleMVA, const reco::Candidate* genJet ):
+  recoTauCand_(recoTauCand),altTauObj_(altTauObj), trigObj_(trigObj),GenParticle_(GenParticle),index_(index), nTotalObjects_(nTotalObjects), genInfo_(GenInfo), Nvtx_(NVTX), evtInfo_(evtInfo), pfJet_(pfJet), Vertex_(Vertex), eleMVA_(eleMVA), genJet_(genJet){
          // Create a dummy reco::Candidate Object with unrealistic LorentzVector values as a default output to return in case of a failed matching.  
         dummyCandidate_ = dynamic_cast<reco::Candidate* >( recoTauCand->clone());
         math::XYZTLorentzVector *v = new math::XYZTLorentzVector();
@@ -315,13 +312,18 @@ const pat::Tau* TauInfoContainer::altTauObj() const {
 const reco::Candidate* TauInfoContainer::PfJet() const {
    if(pfJet_ != NULL) return pfJet_;
    else return dummyCandidate_; // Careful! Method return dummy object to ensure successfull termination of program. Only use GenParticle values if "bool TauInfoContainer::isPfJetMatched()" returns "true"
-
+}
+const reco::Candidate* TauInfoContainer::GenJet() const {
+   if(genJet_ != NULL) return genJet_;
+   else return dummyCandidate_; // Careful! Method return dummy object to ensure successfull termination of program. Only use GenParticle values if "bool TauInfoContainer::isPfJetMatched()" returns "true"
 }
 
 bool TauInfoContainer::isPfJetMatched() const{
    return pfJet_ != NULL;
 }
-
+bool TauInfoContainer::isGenJetMatched() const{
+   return genJet_ != NULL;
+}
 bool TauInfoContainer::hasValidTrack() const{
    if( recoTauCand_->leadPFChargedHadrCand().isNonnull() ){
       if(recoTauCand_->leadPFChargedHadrCand().get() != 0){
@@ -363,6 +365,24 @@ double TauInfoContainer::EvtNr() const {
 
 double TauInfoContainer::LumiSec() const {
    return evtInfo_[1];
+}
+
+double TauInfoContainer::pfCand_dz() const {
+       std::vector<reco::PFCandidatePtr> pfCands = recoTauCand_->pfJetRef()->getPFConstituents();
+         double temppt = -999;
+         double out_dz = -999;
+        for ( std::vector<reco::PFCandidatePtr>::const_iterator jetConstituent = pfCands.begin(); jetConstituent != pfCands.end(); ++jetConstituent ) {
+         if((*jetConstituent)->trackRef().isNonnull()) {
+ 
+           if(((*jetConstituent)->trackRef()->pt()) > temppt ) {  
+           temppt = ((*jetConstituent)->trackRef()->pt());
+           out_dz = ((*jetConstituent)->trackRef()->dz(Vertex_->position()) );  
+      } 
+   }
+ 
+  }
+
+   return out_dz;
 }
 
 double TauInfoContainer::TransImpPara() const {

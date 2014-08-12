@@ -131,7 +131,7 @@ class TauInfoContainer {
 
     //TauInfoContainer( const pat::Tau* recoTauCand, const pat::Tau* altTauObj, std::vector<const reco::Candidate*>* trigObj, const reco::Candidate* GenParticle, unsigned int index, unsigned int nTotalObjects, unsigned int NVTX, const edm::Event* evt, const reco::Candidate* pfJet, const reco::Vertex* Vertex );
     //
-    TauInfoContainer( const pat::Tau* recoTauCand, const pat::Tau* altTauObj, std::vector<const reco::Candidate*>* trigObj, const reco::Candidate* GenParticle, unsigned int index, unsigned int nTotalObjects, const GenEventInfoProduct* GenInfo, unsigned int NVTX, unsigned int* evtInfo, const reco::Candidate* pfJet, const reco::Vertex* Vertex, EleMVAContainer * eleMVA );
+    TauInfoContainer( const pat::Tau* recoTauCand, const pat::Tau* altTauObj, std::vector<const reco::Candidate*>* trigObj, const reco::Candidate* GenParticle, unsigned int index, unsigned int nTotalObjects, const GenEventInfoProduct* GenInfo, unsigned int NVTX, unsigned int* evtInfo, const reco::Candidate* pfJet, const reco::Vertex* Vertex, EleMVAContainer * eleMVA, const reco::Candidate* genJet  );
     
     // Get tag tau object
     const pat::Tau* recoTauCand() const;
@@ -143,6 +143,8 @@ class TauInfoContainer {
     //const reco::Track* Track() const;
 
     const reco::Candidate* PfJet() const;
+
+    const reco::Candidate* GenJet() const;
 
     const reco::Candidate* GenParticle() const; 
 
@@ -156,8 +158,11 @@ class TauInfoContainer {
     bool isAltTauObjMatched() const;
 
     bool isPfJetMatched() const;
+    bool isGenJetMatched() const;
 
     bool hasValidTrack() const;
+
+    double pfCand_dz() const;
 
     // Get match status of trigger filter object
     bool isTrigObjMatched(int a) const;
@@ -241,6 +246,7 @@ class TauInfoContainer {
     const reco::Candidate* pfJet_;
     const reco::Vertex* Vertex_;
     const EleMVAContainer* eleMVA_;
+    const reco::Candidate* genJet_;
 };
 
 #endif /* end of include guard: TauInfoContainer _h */

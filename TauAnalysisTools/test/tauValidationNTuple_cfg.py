@@ -20,20 +20,12 @@ process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
 #-- Calibration tag -----------------------------------------------------------
 
-#process.load("Configuration.Geometry.GeometryExtended2019Reco_cff")
-#process.load('Configuration.StandardSequences.Services_cff')
-#process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-#process.GlobalTag.globaltag = 'PH1_1K_FB_V1::All'
-#process.load("Configuration.StandardSequences.MagneticField_38T_PostLS1_cff")
-
-process.load("Configuration.Geometry.GeometryExtended2023Muon_cff")
-process.load("Configuration.Geometry.GeometryExtended2023MuonReco_cff")
+process.load("Configuration.Geometry.GeometryExtended2019Reco_cff")
+process.load("Configuration.Geometry.GeometryExtended2019_cff")
 process.load('Configuration.StandardSequences.Services_cff')
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-process.GlobalTag.globaltag = 'PH2_1K_FB_V1::All'
+process.GlobalTag.globaltag = 'DES19_62_V8::All'
 process.load("Configuration.StandardSequences.MagneticField_38T_PostLS1_cff")
-
-
 
 #-- PAT standard config -------------------------------------------------------
 
@@ -63,9 +55,11 @@ process.source = cms.Source(
         #'file:////disk1/knutzen//TauPOG/CrossCheck_Upgrade/testRun/ACABF955-DAF7-E311-A024-0025905A608E.root'
         #'file:////disk1/knutzen//TauPOG/CrossCheck_Upgrade/testRun/CE034383-D0F7-E311-A247-002618943983.root'
         #'/store/mc/Muon2023Upg14DR/DYToMuMu_M-20_TuneZ2star_14TeV-pythia6-tauola/AODSIM/PU140bx25_PH2_1K_FB_V2-v1/00000/001DC0AD-54E5-E311-87E5-0025905A60E4.root'
-        '/store/mc/GEM2019Upg14DR/DYToTauTau_M-20_TuneZ2star_14TeV-pythia6-tauola/AODSIM/age1k_PU140bx25_PH1_1K_FB_V1-v1/00000/001601DE-58E5-E311-A498-002618FDA28E.root'
+        #'/store/mc/GEM2019Upg14DR/DYToTauTau_M-20_TuneZ2star_14TeV-pythia6-tauola/AODSIM/age1k_PU140bx25_PH1_1K_FB_V1-v1/00000/001601DE-58E5-E311-A498-002618FDA28E.root'
         #'/store/mc/GEM2019Upg14DR/DYToTauTau_M-20_TuneZ2star_14TeV-pythia6-tauola/AODSIM/PU50bx25_DES19_62_V8-v1/00000/00D0FBCE-4BE3-E311-A444-00261894386B.root'
         #'/store/mc/GEM2019Upg14DR/QCD_Pt-15to3000_Tune4C_Flat_14TeV_pythia8/AODSIM/NoPileUp_DES19_62_V8-v1/00000/CEB07121-01F8-E311-BF5F-0025905B85EE.root'
+        #'/store/mc/GEM2019Upg14DR/QCD_Pt-15to3000_Tune4C_Flat_14TeV_pythia8/AODSIM/NoPileUp_DES19_62_V8-v1/00000/CEB07121-01F8-E311-BF5F-0025905B85EE.root'
+        '/store/mc/GEM2019Upg14DR/DYToEE_M-20_TuneZ2star_14TeV-pythia6-tauola/AODSIM/final_phase1_PU50bx25_DES19_62_V8-v1/00000/06C9D927-741B-E411-8A09-0025905A609A.root'
         )
     )
 
@@ -117,7 +111,8 @@ jetCorrFactors = cms.vstring( 'L1FastJet', 'L2Relative', 'L3Absolute' )
 pfTools.usePF2PAT( process,
                    runPF2PAT = True,
                    jetAlgo = 'AK5',
-                   #jetCorrections = ( 'AK5PFchs', jetCorrFactors ),
+                   jetCorrections = ( 'AK5PFchs', jetCorrFactors, "" ),
+                   #jetCorrections = ['L1FastJet', 'L2Relative', 'L3Absolute'],
                    runOnMC = runOnMC,
                    postfix = "PFlow",
                    pvCollection = cms.InputTag( 'goodOfflinePrimaryVertices' ),
@@ -126,13 +121,13 @@ pfTools.usePF2PAT( process,
 
 #switchJetCollection(
 #        process,
-#        cms.InputTag('ak5PFJets'),
-#        doJTA = True,
-#        doBTagging = True,
+#        cms.InputTag('ak5PFJets')
+#        #doJTA = True
+#        #doBTagging = True
 #        #jetCorrLabel = _jetCorrections,
-#        doType1MET = False,
+#        #doType1MET = False,
 #        #doJetID = True,
-#        jetIdLabel = "ak5"
+#        #jetIdLabel = "ak5"
 #)
 
 process.TFileService = cms.Service("TFileService", fileName = cms.string('TauValidationNTuple.root') #output file
@@ -234,7 +229,15 @@ common_ntuple_branches = cms.PSet(
 
     nvtx = cms.string("Nvtx"),
 
+    PV_x = cms.string("getPV.x"),
+    PV_y = cms.string("getPV.y"),
     PV_z = cms.string("getPV.z"),
+    PV_xError = cms.string("getPV.xError"),
+    PV_yError = cms.string("getPV.yError"),
+    PV_zError = cms.string("getPV.zError"),
+    PV_ndof = cms.string("getPV.ndof"),
+    PV_nTracks = cms.string("getPV.nTracks"),
+    PV_isValid = cms.string("getPV.isValid"),
 
 
 
@@ -325,6 +328,8 @@ common_ntuple_branches = cms.PSet(
     recoTauCand_secVertexCov_12 = cms.string("recoTauCand.secondaryVertexCov.At(1,2)"),
     recoTauCand_secVertexCov_22 = cms.string("recoTauCand.secondaryVertexCov.At(2,2)"),
 
+    pfCand_dz = cms.string("pfCand_dz"),
+
     hasValidTrack = cms.string("hasValidTrack"),
     TransImpPara = cms.string("TransImpPara"),
     TransImpParaError = cms.string("TransImpParaError"),
@@ -345,6 +350,11 @@ common_ntuple_branches = cms.PSet(
     pfJetVz = cms.string("PfJet.vz"),
     isPfJetMatched = cms.string("isPfJetMatched"),
 
+    genJet_Pt = cms.string("GenJet.pt"),
+    genJet_Eta = cms.string("GenJet.eta"),
+    genJet_Phi = cms.string("GenJet.phi"),
+    genJetVz = cms.string("GenJet.vz"),
+    isGenJetMatched = cms.string("isGenJetMatched"),
 )
 if runOnMC:
     common_ntuple_branches.genWeight = cms.string("genInfo.weight")
@@ -386,9 +396,5 @@ process.tauNTuple.filterNames = cms.vstring( filterName )
 
 
 process.p = cms.Path(
-        #process.goodOfflinePrimaryVertices
-        #process.PFTau
-        #process.recoTauClassicHPSSequence*
-        #process.patDefaultSequence
         process.tauNTuple
         )
