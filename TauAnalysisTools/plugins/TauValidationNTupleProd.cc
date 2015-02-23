@@ -139,7 +139,9 @@ std::vector<const reco::GenParticle*> TauValidationNTupleProd::getGenParticleCol
     for (size_t j = 0; j < handle->size(); ++j) {
       const reco::GenParticle& object = handle->at(j);
       //if(fabs(object.pdgId())==15 && object.status() == 2) output.push_back(&object);
-      if(object.status() == 2) output.push_back(&object);
+      if(object.pt()>15. && fabs(object.eta())< 2.5){
+         if(object.status() == 2) output.push_back(&object);
+      }
     }
   return output;
 }
@@ -157,7 +159,7 @@ std::vector<const pat::Tau*> TauValidationNTupleProd::getRecoCandCollections(con
     for (size_t j = 0; j < handle->size(); ++j) {
       const pat::Tau& object = handle->at(j);
  //     if(object.genJet() != 0) std::cout << "Gen decay Mode: " << (JetMCTagUtils::genTauDecayMode(*(object.genJet()))).c_str() << std::endl;
-     if(object.pt()>15. && fabs(object.eta())< 3.){
+     if(object.pt()>15. && fabs(object.eta())< 2.5){
         output.push_back(&object);
       }
     }
@@ -192,7 +194,9 @@ std::vector<const reco::Candidate*> TauValidationNTupleProd::getGenJetCollection
     evt.getByLabel("ak5GenJets", handle);
     for (size_t j = 0; j < handle->size(); ++j) {
       const reco::Candidate& object =  dynamic_cast< const reco::Candidate& > (handle->at(j));
+      if(object.pt()>15. && fabs(object.eta())< 2.5){
         output.push_back(&object);
+      }
     }
   return output;
 }
@@ -202,7 +206,9 @@ std::vector<const reco::Candidate*> TauValidationNTupleProd::getRecoJetCollectio
     evt.getByLabel("patJetsPFlow", handle);
     for (size_t j = 0; j < handle->size(); ++j) {
       const reco::Candidate& object =  dynamic_cast< const reco::Candidate& > (handle->at(j));
+      if(object.pt()>15. && fabs(object.eta())< 2.5){
         output.push_back(&object);
+      }
     }
   return output;
 }
