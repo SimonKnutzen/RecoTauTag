@@ -70,10 +70,7 @@ class TauValidationNTupleProd : public edm::EDAnalyzer {
       std::vector<const reco::Candidate*> getGenJetCollections(const edm::Event& evt);
       const reco::Candidate* findBestRecoObjMatch(const pat::Tau* TagTauObj,std::vector<const reco::Candidate* >& RecoObjSel, double maxDR);
       const pat::Tau* findBestTauObjMatch(const pat::Tau* TagTauObj,std::vector<const pat::Tau* >& TauObjSel, double maxDR);
-      //std::vector<const GEMRecHitCollection*> getGemRecHitsCollections(const edm::Event& evt);
 };
-
-
 
 TauValidationNTupleProd::TauValidationNTupleProd(const edm::ParameterSet& iConfig):
     ntuple_(iConfig.getParameterSet("ntuple"))
@@ -108,7 +105,6 @@ const reco::Vertex* TauValidationNTupleProd::getVertexCollection(const edm::Even
     edm::Handle< std::vector<reco::Vertex > > handle;
     evt.getByLabel("offlinePrimaryVertices", handle);    
     Nvtx_ = handle->size();
-    //std::cout << handle->size() << std::endl;
     // Loop over objects in current collection
 
     const reco::Vertex& object = handle->at(0); // The primary vertex collection is sorted according to the sum of the Pt squared of the tracks associated to each vertex, such that the vertex with largest sum, likely to be the "signal" vertex, appears first. Some justification of this can be found in the Higgs note CMS-AN-11-129.
@@ -118,14 +114,9 @@ const reco::Vertex* TauValidationNTupleProd::getVertexCollection(const edm::Even
 }
 
 const GenEventInfoProduct* TauValidationNTupleProd::getGenEvtInfo(const edm::Event& evt) {
-    //GenEventInfoProduct* const output;
-    //edm::Handle<GenEventInfoProduct> evt_info;
-    //evt.getByType(evt_info);
-    //
     edm::Handle<GenEventInfoProduct> evt_info;
     evt.getByLabel("generator",evt_info);
     GenEventInfoProduct const *output = &(*evt_info);
-    //output = 0; 
     return output;
 }
 
@@ -158,35 +149,12 @@ std::vector<const pat::Tau*> TauValidationNTupleProd::getRecoCandCollections(con
 
     for (size_t j = 0; j < handle->size(); ++j) {
       const pat::Tau& object = handle->at(j);
- //     if(object.genJet() != 0) std::cout << "Gen decay Mode: " << (JetMCTagUtils::genTauDecayMode(*(object.genJet()))).c_str() << std::endl;
      if(object.pt()>15. && fabs(object.eta())< 2.5){
         output.push_back(&object);
       }
     }
   return output;
 }
-// Get gemRecHits colelction:
-//
-//std::vector<const GEMRecHitCollection*> TauValidationNTupleProd::getGemRecHitsCollections(const edm::Event& evt) {
-//    std::vector<const GEMRecHitCollection*> output;
-//    edm::Handle<GEMRecHitCollection> gemRecHits;
-//    evt.getByLabel("gemRecHits","",gemRecHits);
-//    for (size_t j = 0; j < gemRecHits->size(); ++j) {
-//        output.push_back(gemRecHits->at(j));
-//    }
-//  return output;
-//}
-//
-//std::vector<const reco::GenJet*> TauValidationNTupleProd::getGenJetCollections(const edm::Event& evt) {
-//    std::vector<const reco::GenJet*> output;
-//    edm::Handle< std::vector<reco::GenJet> > handle;
-//    evt.getByLabel("ak5GenJets", handle);
-//    for (size_t j = 0; j < handle->size(); ++j) {
-//      const ak5GenJets& object =   (handle->at(j));
-//        output.push_back(&object);
-//    }
-//  return output;
-//}
 
 std::vector<const reco::Candidate*> TauValidationNTupleProd::getGenJetCollections(const edm::Event& evt) {
     std::vector<const reco::Candidate*> output;
@@ -368,15 +336,12 @@ TauValidationNTupleProd::analyze(const edm::Event& iEvent, const edm::EventSetup
             const reco::Candidate* bestGenJetMatch = findBestRecoObjMatch(TagTau, genJets, maxDR_);
             const pat::Tau* bestAltTauObjMatch = findBestTauObjMatch(TagTau, altTauObjects, maxDR_);
             const reco::GsfElectron* bestEle = findBestgsfEleMatch(TagTau, gsfElectrons, 0.3);
-            
-            EleMVAContainer* EleMVA = NULL;
-            if( bestEle != 0 &&  TagTau->tauID("decayModeFindingNewDMs") > 0.5 ) EleMVA = new EleMVAContainer( bestEle, TagTau );
-            else EleMVA = new EleMVAContainer();
 
-            //if( bestEle != 0 ) std::cout << bestEle->pt() << std::endl;
-            //const reco::Candidate*  jetTest = NULL; // For test
+            EleMVAContainer EleMVA;
+            if( bestEle != 0 &&  TagTau->tauID("decayModeFindingNewDMs") > 0.5 )EleMVAContainer EleMVA( bestEle, TagTau );
+            else EleMVAContainer EleMVA( );
 
-            allBestFilterMatches.push_back( NULL ); // For test
+            allBestFilterMatches.push_back( NULL ); // For test. Since we do not need trigger at the moment, we use this for the TP studies.
 
             //for(unsigned int j = 0; j < allTrigObjects.size(); j++){
 
@@ -385,24 +350,17 @@ TauValidationNTupleProd::analyze(const edm::Event& iEvent, const edm::EventSetup
             //       
             //}    
 
-            //theMatch = new TauInfoContainer(TagTau,bestAltTauObjMatch,&allBestFilterMatches,bestGenMatch,matches.size(),tauObjects.size(), Nvtx_, jetTest, Vertex); // create a TauInfoContainer object for each tag tau
-            //theMatch = new TauInfoContainer(TagTau,bestAltTauObjMatch,&allBestFilterMatches,bestGenMatch,matches.size(),tauObjects.size(), Nvtx_, &iEvent, bestJetMatch, Vertex); // create a TauInfoContainer object for each tag tau
-            theMatch = new TauInfoContainer(TagTau,bestAltTauObjMatch,&allBestFilterMatches,bestGenMatch,matches.size(),tauObjects.size(), genInfo, Nvtx_ ,evtInfo , bestJetMatch, Vertex, EleMVA, bestGenJetMatch); // create a TauInfoContainer object for each tag tau
-
-            theMatch->genDecayMode();
+            theMatch = new TauInfoContainer(TagTau,bestAltTauObjMatch,&allBestFilterMatches,bestGenMatch,matches.size(),tauObjects.size(), genInfo, Nvtx_ ,evtInfo , bestJetMatch, Vertex, &EleMVA, bestGenJetMatch); // create a TauInfoContainer object for each tag tau
 
             matches.push_back(theMatch); 
 
     }
 
-
     for (size_t i = 0; i < matches.size(); ++i) {
        ntuple_.fill(*matches.at(i));  // create TTree
     }
 
-    h_NumEvents->Fill(0);
 }
-
 
 void 
 TauValidationNTupleProd::beginJob()
